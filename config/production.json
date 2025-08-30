@@ -1,0 +1,14 @@
+{
+  "logLevel": "info", 
+  "corsOrigins": ["https://yourdomain.com"],
+  "sessionTimeout": 3600,
+  "maxConversationHistory": 20,
+  "rateLimiting": {
+    "enabled": true,
+    "maxRequestsPerMinute": 30
+  },
+  "monitoring": {
+    "enabled": true,
+    "metricsNamespace": "GenericChatbot"
+  }
+}

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguard - Investment Management</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            color: white;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #FF6B35;
+        }
+        
+        .feature-card p {
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        
+        .cta-section {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .cta-section h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        .cta-section p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .demo-button {
+            background: #FF6B35;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .demo-button:hover {
+            background: #e55a2b;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Vanguard Investment Management</h1>
+            <p>Taking a long-term approach and keeping costs low. Discover how our low-cost investing philosophy can help you build wealth over time.</p>
+        </div>
+        
+        <div class="features">
+            <div class="feature-card">
+                <h3>Low-Cost Investing</h3>
+                <p>Our founder Jack Bogle pioneered the concept of low-cost index investing. We believe that keeping costs low is one of the most important factors in long-term investment success.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>Investor-Owned Structure</h3>
+                <p>Unlike most investment companies, Vanguard is owned by its funds, which are owned by fund shareholders. This unique structure aligns our interests with yours.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>Comprehensive Planning</h3>
+                <p>From retirement planning to education savings, we offer a wide range of investment products and services to help you achieve your financial goals.</p>
+            </div>
+        </div>
+        
+        <div class="cta-section">
+            <h2>Have Questions About Your Investments?</h2>
+            <p>Our AI assistant is here to help you understand Vanguard's products, services, and investment philosophy. Get instant answers to your questions about funds, fees, accounts, and more.</p>
+            <button class="demo-button" onclick="openChatDemo()">Try Our AI Assistant</button>
+        </div>
+    </div>
+
+    <script src="js/generic-chat-widget.js"></script>
+    <script>
+        // Vanguard-specific configuration
+        const vanguardConfig = {
+            companyId: 'vanguard',
+            companyName: 'Vanguard Assistant',
+            websocketUrl: 'wss://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/production',
+            primaryColor: '#FF6B35',
+            welcomeMessage: 'Hello! I\'m here to help with your Vanguard investment questions. I can provide information about our funds, fees, account management, retirement planning, and our investment philosophy.',
+            placeholderText: 'Ask about funds, fees, accounts, retirement planning...',
+            autoOpen: false,
+            position: 'bottom-right'
+        };
+
+        // Initialize the chat widget
+        const chatWidget = new GenericChatWidget(vanguardConfig);
+
+        // Function to open chat from demo button
+        function openChatDemo() {
+            chatWidget.openChat();
+        }
+
+        // Expose widget to global scope for manual control
+        window.chatWidget = chatWidget;
+    </script>
+</body>
+</html>

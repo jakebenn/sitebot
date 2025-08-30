@@ -1,0 +1,13 @@
+{
+  "logLevel": "debug",
+  "corsOrigins": ["http://localhost:3000", "http://localhost:8080"],
+  "sessionTimeout": 1800,
+  "maxConversationHistory": 10,
+  "rateLimiting": {
+    "enabled": false,
+    "maxRequestsPerMinute": 60
+  },
+  "monitoring": {
+    "enabled": false
+  }
+}
