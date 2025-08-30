@@ -1,0 +1,34 @@
+{
+  "name": "generic-enterprise-chatbot-services",
+  "version": "1.0.0",
+  "description": "Generic Enterprise Chatbot - API and Web Services",
+  "private": true,
+  "workspaces": [
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "dev:api": "cd api && npm run dev",
+    "dev:web": "cd web && npm run serve",
+    "deploy:api:dev": "cd api && npm run deploy:dev",
+    "deploy:api:prod": "cd api && npm run deploy:prod",
+    "test:api": "cd api && npm test",
+    "install:all": "npm install && cd api && npm install && cd ../web && npm install"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "chatbot",
+    "aws-lambda",
+    "websocket",
+    "perplexity-ai",
+    "serverless",
+    "web",
+    "api"
+  ],
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.12",
+    "jiti": "^2.5.1"
+  }
+}

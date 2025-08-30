@@ -1,0 +1,48 @@
+{
+  "name": "generic-enterprise-chatbot-web",
+  "version": "1.0.0",
+  "description": "Next.js web interface for configurable enterprise chatbot",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "export": "next build && next export",
+    "serve": "npx serve out -p 8080",
+    "deploy:s3": "./scripts/deploy-s3.sh",
+    "deploy:static": "npm run build && echo 'Static files generated in out/ directory'",
+    "deploy:infrastructure": "./scripts/deploy-cloudformation.sh"
+  },
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "next": "14.2.5"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.5",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "serve": "^14.2.1",
+    "jiti": "^1.21.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "chatbot",
+    "web",
+    "nextjs",
+    "react",
+    "typescript",
+    "tailwind",
+    "aws-s3",
+    "cloudformation"
+  ]
+}

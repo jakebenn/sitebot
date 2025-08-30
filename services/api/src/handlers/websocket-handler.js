@@ -34,10 +34,19 @@ exports.handler = async (event, context) => {
     initializeServices();
     configManager.validateConfig();
     
-    const { routeKey, connectionId } = event.requestContext;
-    const stage = event.requestContext.stage;
-    const endpoint = `https://${event.requestContext.domainName}/${stage}`;
-    
+    const { routeKey, connectionId, domainName, stage } = event.requestContext;
+
+    // Choose correct Management API endpoint (offline vs AWS)
+    let managementEndpoint;
+    const isLocal = process.env.IS_OFFLINE === 'true' || (domainName && domainName.includes('localhost'));
+    if (isLocal) {
+      // serverless-offline websockets listen on custom.websocketPort (defaults to 3001)
+      const port = process.env.WEBSOCKET_PORT || process.env.OFFLINE_WEBSOCKET_PORT || '3001';
+      managementEndpoint = `http://localhost:${port}`;
+    } else {
+      managementEndpoint = `https://${domainName}/${stage}`;
+    }
+
     logger.info('WebSocket event received', { routeKey, connectionId });
 
     switch (routeKey) {
@@ -47,7 +56,7 @@ exports.handler = async (event, context) => {
         return await handleDisconnection(connectionId);
       case '$default':
       case 'sendMessage':
-        return await handleMessage(connectionId, event, endpoint);
+        return await handleMessage(connectionId, event, managementEndpoint);
       default:
         logger.warn('Unknown route', { routeKey });
         return { statusCode: 400 };
@@ -166,7 +175,7 @@ async function handleMessage(connectionId, event, endpoint) {
     return { statusCode: 200 };
   } catch (error) {
     logger.error('Message handling error', { error: error.message, connectionId });
-    await sendErrorMessage(connectionId, endpoint, 'Sorry, I encountered an error processing your message. Please try again.');
+    try { await sendErrorMessage(connectionId, endpoint, 'Sorry, I encountered an error processing your message. Please try again.'); } catch {}
     return { statusCode: 500 };
   }
 }

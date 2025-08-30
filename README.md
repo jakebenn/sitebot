@@ -1,270 +1,176 @@
 # Generic Enterprise Chatbot
 
-A configurable, generic chatbot solution using Node.js, AWS Lambda, API Gateway WebSockets, and DynamoDB. The system is designed to be company-agnostic and highly configurable, allowing any organization to deploy a knowledge-based chatbot powered by the Perplexity AI API.
+A configurable enterprise chatbot powered by Perplexity AI, built with AWS Lambda, WebSocket API Gateway, and Next.js.
 
-## Features
+## Project Structure
 
-- **Multi-company configuration support** - Currently configured for Vanguard
-- **Strategic priorities integration** - Company-specific priorities and messaging
-- **Real-time WebSocket communication** - Instant messaging experience
-- **Session persistence** - Conversation history and context maintenance
-- **Scalable serverless architecture** - AWS Lambda and DynamoDB
-- **Popup chat widget interface** - Modern, responsive UI
-- **Security features** - Input validation and sanitization
-- **Comprehensive logging** - Structured logging for monitoring
+```
+site-agent/
+├── services/
+│   ├── api/                    # Backend API (AWS Lambda + WebSocket)
+│   │   ├── src/               # Lambda function source code
+│   │   ├── tests/             # API test suite
+│   │   ├── serverless.yml     # Serverless Framework config
+│   │   └── package.json       # API dependencies
+│   └── web/                   # Frontend (Next.js)
+│       ├── src/               # Next.js source code
+│       ├── out/               # Static export directory
+│       ├── scripts/           # Deployment scripts
+│       └── package.json       # Web dependencies
+├── package.json               # Root package.json (monorepo)
+└── README.md                  # This file
+```
 
-## Architecture
+## Core Components
 
-### Technology Stack
+### Backend API (`services/api/`)
+- **WebSocket Handler**: Real-time chat communication
+- **Session Manager**: DynamoDB session persistence
+- **Perplexity Service**: AI response generation
+- **Configuration Manager**: Company-specific settings
 
-- **Runtime**: Node.js 20.x (latest supported Lambda runtime)
-- **Backend**: AWS Lambda with WebSocket API Gateway
-- **Database**: DynamoDB for session management and configuration
-- **AI Service**: Perplexity AI API for knowledge retrieval
-- **Frontend**: Vanilla JavaScript WebSocket client
-- **Deployment**: Serverless Framework for infrastructure management
-
-### Core Components
-
-1. **WebSocket Handler** (`src/handlers/websocket-handler.js`) - Main Lambda function for handling WebSocket connections and messages
-2. **Perplexity Service** (`src/services/perplexity-service.js`) - Integration with Perplexity AI API
-3. **Session Manager** (`src/services/session-manager.js`) - DynamoDB operations for session management
-4. **Configuration Manager** (`src/utils/config-manager.js`) - Environment and company-specific configuration
-5. **Chat Widget** (`static/js/generic-chat-widget.js`) - Frontend chat interface
+### Frontend Web App (`services/web/`)
+- **Next.js 14**: Modern React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first styling
+- **Chat Widget**: Real-time WebSocket chat component
+- **Static Export**: Deployable to any static hosting
 
 ## Quick Start
 
 ### Prerequisites
-
-- Node.js 18+ installed
-- AWS CLI configured with appropriate permissions
-- Perplexity AI API key
-
-### AWS Profile Setup
-
-The application uses the "sitebot" AWS profile by default. Set up your AWS credentials:
-
-```bash
-# Configure AWS credentials for the sitebot profile
-aws configure --profile sitebot
-
-# Enter your AWS Access Key ID, Secret Access Key, and preferred region
-# AWS Access Key ID: YOUR_ACCESS_KEY
-# AWS Secret Access Key: YOUR_SECRET_KEY
-# Default region name: us-east-1
-# Default output format: json
-```
+- Node.js 18+
+- AWS CLI configured with `sitebot` profile
+- Perplexity API key
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd generic-enterprise-chatbot
-   ```
+```bash
+# Install all dependencies
+npm run setup
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   export PERPLEXITY_API_KEY="your-perplexity-api-key"
-   export NODE_ENV="development"
-   export AWS_PROFILE="sitebot"
-   ```
-
-4. **Deploy to AWS**
-   ```bash
-   # Deploy to development environment
-   npm run deploy:dev
-   
-   # Deploy to production environment
-   npm run deploy:prod
-   ```
-
-### Local Development
-
-1. **Start local development server**
-   ```bash
-   npm run dev
-   ```
-
-2. **Open the demo page**
-   - Navigate to `static/index.html` in your browser
-   - The chat widget will be available in the bottom-right corner
-
-## Configuration
-
-### Company Configuration
-
-The system is currently configured for Vanguard. Company-specific settings are defined in `config/companies/company-config.js`:
-
-```javascript
-{
-  "vanguard": {
-    name: "Vanguard",
-    description: "Leading investment management company...",
-    urls: ["https://investor.vanguard.com", ...],
-    strategicPriorities: ["Low-cost investing philosophy", ...],
-    brandMessage: "Taking a long-term approach and keeping costs low",
-    // ... more configuration
-  }
-}
+# Or install individually:
+npm install
+cd services/api && npm install
+cd ../web && npm install
 ```
 
-### Environment Configuration
+### Development
 
-Environment-specific settings are in `config/development.json` and `config/production.json`:
+```bash
+# Start API development server
+npm run dev:api
 
-```json
-{
-  "logLevel": "debug",
-  "sessionTimeout": 1800,
-  "maxConversationHistory": 10
-}
+# Start web development server
+npm run dev:web
+
+# Run API tests
+npm run test:api
 ```
 
-### Frontend Widget Configuration
+### Deployment
 
-Configure the chat widget in your HTML:
+```bash
+# Deploy API to AWS
+npm run deploy:api:dev    # Development environment
+npm run deploy:api:prod   # Production environment
 
-```javascript
-const vanguardConfig = {
-  companyId: 'vanguard',
-  companyName: 'Vanguard Assistant',
-  websocketUrl: 'wss://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/production',
-  primaryColor: '#FF6B35',
-  welcomeMessage: 'Hello! How can I help you with your Vanguard investments today?',
-  placeholderText: 'Ask about funds, fees, accounts...',
-  autoOpen: false,
-  position: 'bottom-right'
-};
-
-const chatWidget = new GenericChatWidget(vanguardConfig);
+# Deploy web app to S3
+npm run deploy:web:s3     # Build and deploy to S3
 ```
+
+## Environment Configuration
+
+### API Environment Variables
+Create `.env.local` in the root directory:
+
+```bash
+# AWS Configuration
+AWS_PROFILE=sitebot
+AWS_REGION=us-east-1
+
+# Perplexity AI
+PERPLEXITY_API_KEY=your-api-key
+
+# Company Configuration
+COMPANY_ID=vanguard
+```
+
+### Web App Environment Variables
+Create `.env.local` in `services/web/`:
+
+```bash
+NEXT_PUBLIC_WEBSOCKET_URL=wss://your-api-gateway-url
+NEXT_PUBLIC_COMPANY_ID=vanguard
+NEXT_PUBLIC_COMPANY_NAME=Vanguard Assistant
+```
+
+## Testing
+
+### API Tests
+```bash
+# Run all API tests
+npm run test:api
+
+# Run specific tests
+cd services/api
+npm run test:websocket
+npm run test:connectivity
+```
+
+### Web App
+The web app uses Next.js built-in testing capabilities and TypeScript for type checking.
 
 ## Deployment
 
-### AWS Infrastructure
+### API Deployment
+The API is deployed using Serverless Framework to AWS:
+- Lambda functions for WebSocket handling
+- API Gateway for WebSocket connections
+- DynamoDB for session storage
 
-The Serverless Framework automatically creates:
-
-- **API Gateway WebSocket API** - Handles WebSocket connections
-- **Lambda Functions** - Process messages and manage sessions
-- **DynamoDB Table** - Stores session data and conversation history
-- **IAM Roles** - Secure permissions for Lambda functions
-
-### Deployment Commands
+### Web App Deployment
+The web app is built as a static export and deployed to AWS S3:
 
 ```bash
-# Deploy to development
-npm run deploy:dev
+# Build and deploy to S3
+npm run deploy:web:s3
 
-# Deploy to production
-npm run deploy:prod
-
-# Deploy to specific region
-serverless deploy --stage prod --region us-west-2
+# Or manually:
+cd services/web
+npm run build
+aws s3 sync out/ s3://your-bucket --delete
 ```
 
-### Environment Variables
+See `services/web/S3-SETUP.md` for detailed S3 setup instructions.
 
-Required environment variables:
+## Architecture
 
-- `PERPLEXITY_API_KEY` - Your Perplexity AI API key
-- `NODE_ENV` - Environment (development/production)
-- `LOG_LEVEL` - Logging level (debug/info/warn/error)
+```
+┌─────────────────┐    WebSocket    ┌─────────────────┐
+│   Next.js Web   │ ◄─────────────► │   AWS Lambda    │
+│     App         │                 │   Functions     │
+└─────────────────┘                 └─────────────────┘
+         │                                   │
+         │                                   │
+    Static Files                        DynamoDB
+    (S3 Hosted)                         Sessions
+```
 
-## Usage
+## Customization
 
-### Adding a New Company
+### Company Configuration
+Update company settings in `services/api/src/config/companies/`:
+- Company name and branding
+- AI model parameters
+- Response templates
+- WebSocket endpoints
 
-1. **Add company configuration** in `config/companies/company-config.js`:
-   ```javascript
-   "newcompany": {
-     name: "New Company",
-     description: "Company description",
-     urls: ["https://company.com"],
-     strategicPriorities: ["Priority 1", "Priority 2"],
-     brandMessage: "Company brand message",
-     industry: "Industry",
-     supportedTopics: ["Topic 1", "Topic 2"],
-     responseStyle: "professional, helpful",
-     maxResponseTokens: 600,
-     temperature: 0.4
-   }
-   ```
-
-2. **Update frontend configuration**:
-   ```javascript
-   const config = {
-     companyId: 'newcompany',
-     companyName: 'New Company Assistant',
-     // ... other settings
-   };
-   ```
-
-3. **Deploy the updated configuration**
-
-### Customizing the Chat Widget
-
-The chat widget supports extensive customization:
-
-- **Position**: `bottom-right`, `bottom-left`, `top-right`, `top-left`
-- **Colors**: Custom primary color
-- **Messages**: Welcome message and placeholder text
-- **Behavior**: Auto-open, connection retry settings
-- **Styling**: Custom CSS classes and responsive design
-
-## Security
-
-### Input Validation
-
-- Message length limits (500 characters)
-- Content filtering for harmful patterns
-- HTML sanitization
-- Company ID validation
-
-### AWS Security
-
-- IAM roles with minimal required permissions
-- DynamoDB encryption at rest
-- API Gateway request validation
-- Lambda function isolation
-
-## Monitoring and Logging
-
-### CloudWatch Integration
-
-- Structured JSON logging
-- Lambda function metrics
-- DynamoDB performance monitoring
-- API Gateway access logs
-
-### Log Levels
-
-- `debug` - Detailed debugging information
-- `info` - General application flow
-- `warn` - Warning conditions
-- `error` - Error conditions
-
-## Performance Optimization
-
-### Cold Start Optimization
-
-- Webpack bundling for smaller package sizes
-- External SDK management
-- Connection pooling
-- Memory optimization (512MB recommended)
-
-### DynamoDB Optimization
-
-- Pay-per-request billing for variable workloads
-- TTL for automatic session cleanup
-- Efficient query patterns
-- Connection reuse
+### Web App Styling
+Customize the web app in `services/web/src/`:
+- Tailwind CSS classes
+- Component styling
+- Brand colors and themes
 
 ## Troubleshooting
 
@@ -272,52 +178,32 @@ The chat widget supports extensive customization:
 
 1. **WebSocket Connection Failed**
    - Check API Gateway endpoint URL
-   - Verify CORS settings
-   - Ensure Lambda function is deployed
+   - Verify Lambda function permissions
+   - Check CloudWatch logs
 
-2. **Perplexity API Errors**
-   - Verify API key is correct
-   - Check API rate limits
-   - Review error logs for specific issues
+2. **API Responses Not Working**
+   - Verify Perplexity API key
+   - Check company configuration
+   - Review Lambda function logs
 
-3. **Session Management Issues**
-   - Check DynamoDB table permissions
-   - Verify table exists and is accessible
-   - Review session cleanup logs
+3. **S3 Deployment Issues**
+   - Ensure AWS credentials are configured
+   - Check S3 bucket permissions
+   - Verify bucket policy
 
-### Debug Mode
-
-Enable debug logging:
-
-```bash
-export LOG_LEVEL=debug
-npm run dev
-```
+### Logs and Monitoring
+- **API Logs**: CloudWatch Logs for Lambda functions
+- **WebSocket Logs**: API Gateway CloudWatch logs
+- **Web App**: Browser developer tools
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
+4. Run tests: `npm run test:api`
 5. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support and questions:
-
-1. Check the troubleshooting section
-2. Review CloudWatch logs
-3. Open an issue in the repository
-
-## Roadmap
-
-- [ ] Multi-language support
-- [ ] Advanced analytics dashboard
-- [ ] Integration with additional AI providers
-- [ ] Enhanced security features
-- [ ] Mobile app support
+This project is licensed under the MIT License.

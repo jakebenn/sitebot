@@ -1,0 +1,25 @@
+{
+  "name": "generic-enterprise-chatbot-web",
+  "version": "1.0.0",
+  "description": "Web interface for configurable enterprise chatbot",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "echo 'Web app is static HTML/JS - serve from static/ directory'",
+    "build": "echo 'No build step required for static web app'",
+    "serve": "python3 -m http.server 8080 --directory static",
+    "serve:node": "npx http-server static -p 8080"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "chatbot",
+    "web",
+    "static",
+    "html",
+    "javascript"
+  ]
+}

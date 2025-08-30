@@ -1,0 +1,64 @@
+{
+  "name": "generic-enterprise-chatbot-api",
+  "version": "1.0.0",
+  "description": "API service for configurable enterprise chatbot powered by Perplexity AI",
+  "main": "src/handlers/websocket-handler.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "dotenv -e .env.local -- cross-env AWS_PROFILE=${AWS_PROFILE:-sitebot} AWS_REGION=${AWS_REGION:-us-east-1} serverless offline start",
+    "dev:watch": "dotenv -e .env.local -- cross-env AWS_PROFILE=${AWS_PROFILE:-sitebot} AWS_REGION=${AWS_REGION:-us-east-1} nodemon --watch src --watch serverless.yml --ext js,json,yml --exec \"serverless offline start\"",
+    "build": "echo 'No build step required for local development'",
+    "deploy:dev": "./scripts/deploy.sh dev",
+    "deploy:prod": "./scripts/deploy.sh prod",
+    "test": "node tests/run-all.js",
+    "test:watch": "jest --watch",
+    "test:websocket": "node tests/websocket.test.js",
+    "test:websocket:interactive": "node tests/websocket.test.js --interactive",
+    "test:websocket:automated": "node tests/websocket.test.js --automated",
+    "test:connectivity": "node tests/connectivity.test.js",
+    "test:all": "node tests/run-all.js",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
+  },
+  "dependencies": {
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.400.0",
+    "@aws-sdk/client-dynamodb": "^3.400.0",
+    "@aws-sdk/lib-dynamodb": "^3.400.0",
+    "dotenv": "^17.2.1",
+    "openai": "^4.20.0",
+    "uuid": "^9.0.1",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.45.0",
+    "jest": "^29.6.0",
+    "serverless": "^4.1.0",
+    "serverless-offline": "^14.4.0",
+    "nodemon": "^3.0.0",
+    "cross-env": "^7.0.3",
+    "dotenv-cli": "^7.4.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src",
+      "serverless.yml"
+    ],
+    "ext": "js,json,yml",
+    "ignore": [
+      "tests",
+      ".serverless",
+      "node_modules"
+    ]
+  },
+  "keywords": [
+    "chatbot",
+    "aws-lambda",
+    "websocket",
+    "perplexity-ai",
+    "serverless",
+    "api"
+  ]
+}

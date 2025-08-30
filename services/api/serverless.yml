@@ -1,6 +1,8 @@
 service: generic-enterprise-chatbot
 
-frameworkVersion: '3'
+frameworkVersion: '4'
+
+useDotenv: true
 
 provider:
   name: aws
@@ -14,7 +16,7 @@ provider:
   environment:
     NODE_ENV: ${self:provider.stage}
     DYNAMODB_TABLE_NAME: ${self:service}-sessions-${self:provider.stage}
-    PERPLEXITY_API_KEY: ${env:PERPLEXITY_API_KEY, 'dummy-key-for-local-dev'}
+    PERPLEXITY_API_KEY: ${env:PERPLEXITY_API_KEY}
     LOG_LEVEL: ${env:LOG_LEVEL, 'info'}
     DEFAULT_COMPANY: ${env:DEFAULT_COMPANY, 'vanguard'}
     WEBSOCKET_API_ENDPOINT: 

@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'S3 Static Website Hosting for Generic Enterprise Chatbot'
+
+Parameters:
+  BucketName:
+    Type: String
+    Default: 'sitebot-web'
+    Description: 'Name of the S3 bucket for static website hosting'
+    AllowedPattern: '^[a-z0-9-]+$'
+    ConstraintDescription: 'Bucket name must contain only lowercase letters, numbers, and hyphens'
+
+Resources:
+  # S3 Bucket for static website hosting
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: 404.html
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET, HEAD]
+            AllowedOrigins: ['*']
+            MaxAge: 3000
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+      Tags:
+        - Key: Name
+          Value: !Sub '${BucketName}-website'
+        - Key: Project
+          Value: 'generic-enterprise-chatbot'
+        - Key: Environment
+          Value: 'production'
+
+  # Bucket Policy for public read access
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub 'arn:aws:s3:::${WebsiteBucket}/*'
+
+Outputs:
+  WebsiteBucketName:
+    Description: 'Name of the S3 bucket hosting the website'
+    Value: !Ref WebsiteBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-WebsiteBucketName'
+
+  WebsiteURL:
+    Description: 'URL of the website'
+    Value: !GetAtt WebsiteBucket.WebsiteURL
+    Export:
+      Name: !Sub '${AWS::StackName}-WebsiteURL'
+
+  WebsiteDomainName:
+    Description: 'Domain name of the website'
+    Value: !GetAtt WebsiteBucket.DomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-WebsiteDomainName'
+
+  DeploymentCommand:
+    Description: 'Command to deploy the website'
+    Value: !Sub |
+      npm run build && aws s3 sync out/ s3://${WebsiteBucket} --delete
+    Export:
+      Name: !Sub '${AWS::StackName}-DeploymentCommand'

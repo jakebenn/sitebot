@@ -9,6 +9,15 @@ class PerplexityService {
     });
     this.maxRetries = 3;
     this.retryDelay = 1000; // 1 second
+
+    // Masked diagnostics (no secret leakage)
+    const key = this.client.apiKey || '';
+    logger.info('Perplexity API key status', {
+      present: Boolean(key),
+      isDummy: key === 'dummy-key-for-local-dev',
+      length: key ? key.length : 0,
+      prefix: key ? key.slice(0, 4) : null
+    });
   }
 
   async generateResponse(userMessage, conversationHistory = [], companyConfig) {
