@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface ChatWidgetProps {
   companyId?: string;
@@ -50,12 +52,14 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const [autoScroll, setAutoScroll] = useState(true);
 
   const websocketRef = useRef<WebSocket | null>(null);
   const connectingRef = useRef(false);
   const shouldReconnectRef = useRef(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const sessionIdRef = useRef<string>('');
   if (!sessionIdRef.current && typeof window !== 'undefined') {
@@ -83,7 +87,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
       connectingRef.current = false;
       setIsConnected(true);
       setReconnectAttempts(0);
-      // console.debug('WS open');
     };
 
     ws.onmessage = (event) => {
@@ -95,10 +98,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
       }
     };
 
-    ws.onclose = (e) => {
+    ws.onclose = () => {
       connectingRef.current = false;
       setIsConnected(false);
-      console.warn('WS closed', e.code, e.reason);
       if (shouldReconnectRef.current) handleReconnect();
     };
 
@@ -156,20 +158,31 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleTextareaKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
   };
 
+  const handleMessagesScroll = () => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const threshold = 40;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+    setAutoScroll(atBottom);
+  };
+
+  const scrollToBottom = () => {
+    if (!autoScroll) return;
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   useEffect(() => {
-    // Slight delay avoids race with HMR/initial render
     const t = setTimeout(() => connectWebSocket(), 150);
     if (autoOpen) setTimeout(() => setIsOpen(true), autoOpenDelay);
     return () => {
       shouldReconnectRef.current = false;
-      // In dev, keep socket to avoid HMR early-close; close only in production
       if (process.env.NODE_ENV === 'production') {
         try { websocketRef.current?.close(); } catch {}
       }
@@ -177,7 +190,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     };
   }, [connectWebSocket, autoOpen, autoOpenDelay]);
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  useEffect(() => { scrollToBottom(); }, [messages]);
   useEffect(() => { if (isOpen) inputRef.current?.focus(); }, [isOpen]);
 
   const popupEdgeStyle = position.includes('right') ? { right: 0 } : { left: 0 };
@@ -189,7 +202,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-16 w-96 max-w-[calc(100vw-40px)] bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col" style={popupEdgeStyle}>
+        <div className="absolute bottom-16 w-[41rem] max-w-[calc(100vw-40px)] max-h-[85vh] bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col" style={popupEdgeStyle}>
           <div className="flex items-center justify-between p-4 border-b border-gray-200" style={{ backgroundColor: primaryColor }}>
             <div className="text-white">
               <h3 className="font-semibold">{companyName}</h3>
@@ -198,14 +211,21 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
             <button onClick={() => setIsOpen(false)} className="text-white hover:opacity-80 text-xl font-bold">×</button>
           </div>
 
-          {!isConnected && (
-            <div className="px-4 py-2 bg-yellow-50 text-yellow-800 text-sm border-b border-yellow-200">Connection not established. Retrying…</div>
-          )}
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div
+            ref={messagesContainerRef}
+            onScroll={handleMessagesScroll}
+            className="flex-1 min-h-0 overflow-y-auto p-4 pr-3 space-y-3"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs px-3 py-2 rounded-lg ${message.type === 'user' ? 'bg-blue-500 text-white' : message.type === 'bot' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800'}`}>{message.content}</div>
+                <div className={`max-w-[31rem] px-3 py-2 rounded-lg ${message.type === 'user' ? 'bg-blue-500 text-white' : message.type === 'bot' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                  {message.type === 'bot' ? (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                  ) : (
+                    message.content
+                  )}
+                </div>
               </div>
             ))}
             {isTyping && (
@@ -215,8 +235,17 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
           </div>
 
           <div className="p-4 border-t border-gray-200">
-            <div className="flex space-x-2">
-              <input ref={inputRef} type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyPress={handleKeyPress} placeholder={placeholderText} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled={!isConnected} />
+            <div className="flex items-end space-x-2">
+              <textarea
+                ref={inputRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleTextareaKeyDown}
+                placeholder={placeholderText}
+                rows={3}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none max-h-40 overflow-y-auto"
+                disabled={!isConnected}
+              />
               <button onClick={sendMessage} disabled={!inputValue.trim() || !isConnected} className="px-4 py-2 rounded-lg text-white transition-colors disabled:opacity-50" style={{ backgroundColor: primaryColor }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
               </button>

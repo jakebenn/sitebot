@@ -13,7 +13,8 @@ const companyConfigurations = {
       "Investor-owned structure benefits",
       "Comprehensive retirement planning"
     ],
-    brandMessage: "Taking a long-term approach and keeping costs low",
+    brandMessage: "Taking a long-term approach and keeping costs low. Taking a stand for investors and giving them the best chance for investment success.",
+
     industry: "Financial Services",
     supportedTopics: [
       "Investment products and services",
@@ -22,7 +23,7 @@ const companyConfigurations = {
       "Retirement planning",
       "Company history and philosophy"
     ],
-    responseStyle: "professional, educational, conservative",
+    responseStyle: "friendly, professional, educational, conservative",
     maxResponseTokens: 800,
     temperature: 0.3
   }

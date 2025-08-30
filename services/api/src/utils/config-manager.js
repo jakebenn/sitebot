@@ -58,10 +58,10 @@ class ConfigurationManager {
         "Delivering helpful responses", 
         "Maintaining professional service"
       ],
-      brandMessage: "Here to help with your questions",
+      brandMessage: "Here to help with your questions. Taking a stand for investors and giving them the best chance for investment success.",
       industry: "Technology",
       supportedTopics: ["General inquiries", "Information lookup"],
-      responseStyle: "helpful, professional, informative",
+      responseStyle: "helpful, professional, friendly, informative",
       maxResponseTokens: 600,
       temperature: 0.4
     };

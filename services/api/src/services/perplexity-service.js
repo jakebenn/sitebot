@@ -62,7 +62,7 @@ class PerplexityService {
   buildSystemPrompt(companyConfig) {
     const { name, description, urls, strategicPriorities, brandMessage, supportedTopics, responseStyle } = companyConfig;
     
-    return `You are a knowledgeable assistant for ${name}. 
+    return `You are a friendly, professional, and knowledgeable assistant for ${name}.
 
 COMPANY CONTEXT:
 - Company: ${name}
