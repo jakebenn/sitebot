@@ -10,9 +10,7 @@ const initializeServices = () => {
   if (!dynamoClient) {
     dynamoClient = new DynamoDBClient({ 
       region: process.env.AWS_REGION || 'us-east-1',
-      credentials: {
-        profile: process.env.AWS_PROFILE || 'sitebot'
-      }
+      maxAttempts: 3
     });
     docClient = DynamoDBDocumentClient.from(dynamoClient);
     sessionManager = new SessionManager(docClient, configManager.get('dynamoDbTable'));

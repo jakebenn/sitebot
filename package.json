@@ -4,13 +4,18 @@
   "description": "Configurable enterprise chatbot powered by Perplexity AI",
   "main": "src/handlers/websocket-handler.js",
   "type": "commonjs",
-  "scripts": {
+    "scripts": {
     "dev": "serverless offline start",
     "build": "echo 'No build step required for local development'",
-    "deploy:dev": "serverless deploy --stage dev",
-    "deploy:prod": "serverless deploy --stage prod",
-    "test": "jest",
+    "deploy:dev": "./scripts/deploy.sh dev",
+    "deploy:prod": "./scripts/deploy.sh prod", 
+    "test": "node tests/run-all.js",
     "test:watch": "jest --watch",
+    "test:websocket": "node tests/websocket.test.js",
+    "test:websocket:interactive": "node tests/websocket.test.js --interactive",
+    "test:websocket:automated": "node tests/websocket.test.js --automated",
+    "test:connectivity": "node tests/connectivity.test.js",
+    "test:all": "node tests/run-all.js",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix"
   },
@@ -20,7 +25,8 @@
     "@aws-sdk/lib-dynamodb": "^3.400.0",
     "dotenv": "^17.2.1",
     "openai": "^4.20.0",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "eslint": "^8.45.0",

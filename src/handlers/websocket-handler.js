@@ -21,9 +21,7 @@ const initializeServices = () => {
   if (!dynamoClient) {
     dynamoClient = new DynamoDBClient({ 
       region: process.env.AWS_REGION || 'us-east-1',
-      credentials: {
-        profile: process.env.AWS_PROFILE || 'sitebot'
-      }
+      maxAttempts: 3
     });
     docClient = DynamoDBDocumentClient.from(dynamoClient);
     perplexityService = new PerplexityService(configManager.get('perplexityApiKey'));
@@ -119,6 +117,21 @@ async function handleMessage(connectionId, event, endpoint) {
 
     const { companyConfig, conversationHistory = [] } = sessionData;
     
+    // Debug logging to see what's in the session data
+    logger.debug('Session data retrieved', { 
+      connectionId, 
+      sessionId: sessionData.SessionId,
+      hasCompanyConfig: !!companyConfig,
+      hasConversationHistory: !!conversationHistory,
+      sessionKeys: Object.keys(sessionData)
+    });
+    
+    // Validate that company configuration exists
+    if (!companyConfig) {
+      await sendErrorMessage(connectionId, endpoint, 'Session configuration error. Please refresh and try again.');
+      return { statusCode: 500 };
+    }
+    
     // Generate AI response using company-specific configuration
     const aiResponse = await perplexityService.generateResponse(
       text, 
@@ -136,8 +149,8 @@ async function handleMessage(connectionId, event, endpoint) {
       }
     ];
 
-    // Save updated session
-    await sessionManager.updateSession(connectionId, sessionId, {
+    // Save updated session using the actual session ID from the retrieved session
+    await sessionManager.updateSession(connectionId, sessionData.SessionId, {
       conversationHistory: updatedHistory,
       lastActivity: new Date().toISOString()
     });

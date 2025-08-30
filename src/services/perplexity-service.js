@@ -15,11 +15,20 @@ class PerplexityService {
     try {
       // Check if this is a dummy key for local development
       if (this.client.apiKey === 'dummy-key-for-local-dev') {
+        logger.info('Using local development response (dummy API key)');
         return this.getLocalDevelopmentResponse(userMessage, companyConfig);
       }
 
       const systemPrompt = this.buildSystemPrompt(companyConfig);
       const messages = this.buildMessageContext(systemPrompt, conversationHistory, userMessage);
+
+      logger.info('Preparing API request', {
+        userMessage: userMessage.substring(0, 100) + (userMessage.length > 100 ? '...' : ''),
+        conversationHistoryLength: conversationHistory.length,
+        systemPromptLength: systemPrompt.length,
+        totalMessages: messages.length,
+        company: companyConfig.name
+      });
 
       const response = await this.makeApiRequest(messages, companyConfig);
       
@@ -30,9 +39,12 @@ class PerplexityService {
       
       return response;
     } catch (error) {
-      logger.error('Perplexity API error', { 
+      logger.error('Perplexity API error - using fallback response', { 
         error: error.message,
-        company: companyConfig.name 
+        errorCode: error.status,
+        errorType: error.type,
+        company: companyConfig.name,
+        fullError: JSON.stringify(error, null, 2)
       });
       return this.getFallbackResponse(companyConfig);
     }
@@ -92,17 +104,44 @@ Remember: Always prioritize accuracy over completeness and cite official company
   }
 
   async makeApiRequest(messages, companyConfig, attempt = 1) {
+    const requestConfig = {
+              model: 'sonar-pro',
+      messages: messages,
+      max_tokens: companyConfig.maxResponseTokens || 600,
+      temperature: companyConfig.temperature || 0.4,
+      stream: false
+    };
+
+    logger.info('Making Perplexity API request', {
+      attempt,
+      model: requestConfig.model,
+      maxTokens: requestConfig.max_tokens,
+      temperature: requestConfig.temperature,
+      messageCount: messages.length,
+      company: companyConfig.name
+    });
+
     try {
-      const response = await this.client.chat.completions.create({
-        model: 'sonar-medium-online',
-        messages: messages,
-        max_tokens: companyConfig.maxResponseTokens || 600,
-        temperature: companyConfig.temperature || 0.4,
-        stream: false
+      const response = await this.client.chat.completions.create(requestConfig);
+
+      logger.info('Perplexity API request successful', {
+        model: requestConfig.model,
+        responseLength: response.choices[0].message.content.length,
+        company: companyConfig.name
       });
 
       return response.choices[0].message.content.trim();
     } catch (error) {
+      logger.error('Perplexity API request failed', {
+        attempt,
+        model: requestConfig.model,
+        error: error.message,
+        errorCode: error.status,
+        errorType: error.type,
+        company: companyConfig.name,
+        fullError: JSON.stringify(error, null, 2)
+      });
+
       if (attempt < this.maxRetries && this.isRetryableError(error)) {
         logger.warn('Retrying Perplexity API request', { attempt, error: error.message });
         await this.delay(this.retryDelay * attempt);

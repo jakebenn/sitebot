@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 // Load environment variables from .env.local if it exists
-if (process.env.NODE_ENV !== 'production') {
+// Skip loading AWS credentials in Lambda environment
+if (process.env.NODE_ENV !== 'production' && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
   try {
     require('dotenv').config({ path: '.env.local' });
   } catch (error) {

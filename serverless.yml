@@ -17,6 +17,8 @@ provider:
     PERPLEXITY_API_KEY: ${env:PERPLEXITY_API_KEY, 'dummy-key-for-local-dev'}
     LOG_LEVEL: ${env:LOG_LEVEL, 'info'}
     DEFAULT_COMPANY: ${env:DEFAULT_COMPANY, 'vanguard'}
+    WEBSOCKET_API_ENDPOINT: 
+      Fn::Sub: 'wss://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/${self:provider.stage}'
 
   iam:
     role:

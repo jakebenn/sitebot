@@ -40,35 +40,27 @@ class SessionManager {
 
   async getSession(connectionId, sessionId = null) {
     try {
-      let params;
+      // Always query for any active session for this connection first
+      const params = {
+        TableName: this.tableName,
+        KeyConditionExpression: 'PK = :pk',
+        ExpressionAttributeValues: {
+          ':pk': `CONNECTION#${connectionId}`
+        },
+        ScanIndexForward: false, // Get most recent first
+        Limit: 1
+      };
       
-      if (sessionId) {
-        // Get specific session
-        params = {
-          TableName: this.tableName,
-          Key: {
-            PK: `CONNECTION#${connectionId}`,
-            SK: `SESSION#${sessionId}`
-          }
-        };
-        
-        const result = await this.docClient.send(new GetCommand(params));
-        return result.Item || null;
-      } else {
-        // Query for any active session for this connection
-        params = {
-          TableName: this.tableName,
-          KeyConditionExpression: 'PK = :pk',
-          ExpressionAttributeValues: {
-            ':pk': `CONNECTION#${connectionId}`
-          },
-          ScanIndexForward: false, // Get most recent first
-          Limit: 1
-        };
-        
-        const result = await this.docClient.send(new QueryCommand(params));
-        return result.Items?.[0] || null;
+      const result = await this.docClient.send(new QueryCommand(params));
+      const session = result.Items?.[0] || null;
+      
+      if (session) {
+        logger.debug('Session found', { connectionId, sessionId: session.SessionId, requestedSessionId: sessionId });
+        return session;
       }
+      
+      logger.warn('No session found for connection', { connectionId, requestedSessionId: sessionId });
+      return null;
     } catch (error) {
       logger.error('Failed to get session', { error: error.message, connectionId, sessionId });
       return null;
@@ -85,7 +77,7 @@ class SessionManager {
       ':ttl': timestamp + this.sessionTTL
     };
 
-    // Build dynamic update expression
+    // Build dynamic update expression for specific fields only
     Object.keys(updateData).forEach(key => {
       const placeholder = `:${key.toLowerCase()}`;
       updateExpression.push(`#${key} = ${placeholder}`);
@@ -93,7 +85,9 @@ class SessionManager {
       expressionAttributeValues[placeholder] = updateData[key];
     });
 
-    updateExpression.push('LastActivity = :lastActivity', 'TTL = :ttl');
+    // Handle TTL as a reserved keyword
+    updateExpression.push('LastActivity = :lastActivity', '#TTL = :ttl');
+    expressionAttributeNames['#TTL'] = 'TTL';
 
     try {
       await this.docClient.send(new UpdateCommand({

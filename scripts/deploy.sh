@@ -178,6 +178,7 @@ deploy_to_aws() {
     # Set environment variables for deployment
     export STAGE=$stage
     export REGION=$region
+    export AWS_PROFILE=sitebot
     
     # Deploy using serverless with sitebot profile
     serverless deploy --stage $stage --region $region --aws-profile sitebot
